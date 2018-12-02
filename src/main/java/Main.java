@@ -6,7 +6,7 @@ import java.io.IOException;
 public class Main {
 
     private static Equation equation;
-    private static ConcurentBlockRunner sheduler = new ConcurentBlockRunner();
+    private static ConcurentBlockRunner scheduler = new ConcurentBlockRunner();
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
@@ -27,23 +27,21 @@ public class Main {
 
         for (int currentDiagonalIndex = 0; currentDiagonalIndex < equation.size; currentDiagonalIndex++) {
 
+            swapIfCurrentcurrentDiagonalIndexIsZero(currentDiagonalIndex);
+
             double[] ratios = calculateRatioForRows(currentDiagonalIndex);
 
             substract(currentDiagonalIndex, ratios);
+
+
         }
 
-    }
-
-    private static void startAndJoinThreads(Thread[] threads) throws InterruptedException {
-        for (Thread thread : threads) {
-            if (thread != null)
-                thread.start();
+        for (int i = 0; i < equation.size; i++) {
+            double value = equation.leftMatrix[i][i];
+            equation.leftMatrix[i][i] = 1;
+            equation.rightMatrix[i] /= value;
         }
 
-        for (Thread thread : threads) {
-            if (thread != null)
-                thread.join();
-        }
     }
 
     private static double[] calculateRatioForRows(int currentDiagonalIndex) throws InterruptedException {
@@ -56,31 +54,17 @@ public class Main {
             final int i = row;
             final int j = currentDiagonalIndex;
 
-//            threadsPool[row] = new Thread(() -> {
-//                System.out.println(String.format("A[%s][%s] = %s / A[%s][%s] = %s",
-//                        i, j, equation.leftMatrix[i][j], j, j, equation.leftMatrix[j][j]));
-//
-//                ratios[i] = equation.leftMatrix[i][j] / equation.leftMatrix[j][j];
-//                System.out.println("Ratio for " + i + " : " + ratios[i]);
-//            });
-
-            sheduler.addThread(new Production() {
+            scheduler.addThread(new Production() {
                 @Override
                 public void run() {
                     super.run();
-                    System.out.println(String.format("A[%s][%s] = %s / A[%s][%s] = %s",
-                            i, j, equation.leftMatrix[i][j], j, j, equation.leftMatrix[j][j]));
-
                     ratios[i] = equation.leftMatrix[i][j] / equation.leftMatrix[j][j];
-                    System.out.println("Ratio for " + i + " : " + ratios[i]);
                 }
             });
 
         }
 
-
-//        startAndJoinThreads(threadsPool);
-        sheduler.startAll();
+        scheduler.startAll();
 
         return ratios;
     }
@@ -94,20 +78,8 @@ public class Main {
 
                 final int i = row;
                 final int j = column;
-//                threadsPool[column] = new Thread(() -> {
-//                    System.out.println("Start thread ------------");
-//                    System.out.println(String.format("i = %s j=%s", i, j));
-//                    System.out.println(String.format("first: %s ration: %s second: %s",
-//                            equation.leftMatrix[i][j], ratios[i], equation.leftMatrix[currentDiagonalIndex][j]));
-//
-//                    equation.leftMatrix[i][j] = equation.leftMatrix[i][j] - ratios[i] * equation.leftMatrix[currentDiagonalIndex][j];
-//
-//                    System.out.println(String.format("After: %s", equation.leftMatrix[i][j]));
-//                    System.out.println("End -----------------------");
-//                });
-//            }
 
-                sheduler.addThread(new Production() {
+                scheduler.addThread(new Production() {
                     @Override
                     public void run() {
                         super.run();
@@ -121,11 +93,7 @@ public class Main {
             final int row_f = row;
             int indexOfLast = equation.size;
 
-//                threadsPool[indexOfLast] = new Thread(() ->
-//                        equation.rightMatrix[row_f] = equation.rightMatrix[row_f] - ratios[row_f] * equation.rightMatrix[currentDiagonalIndex]
-//                );
-
-            sheduler.addThread(new Production() {
+            scheduler.addThread(new Production() {
                 @Override
                 public void run() {
                     super.run();
@@ -133,14 +101,32 @@ public class Main {
 
                 }
             });
-
-//                startAndJoinThreads(threadsPool);
-
-            sheduler.startAll();
-
-
+            scheduler.startAll();
         }
-
-
     }
+
+    private static void swapIfCurrentcurrentDiagonalIndexIsZero(int currentDiagonalIndex){
+        if(equation.leftMatrix[currentDiagonalIndex][currentDiagonalIndex] == 0){
+            for(int i=currentDiagonalIndex;i<equation.size;i++){
+                if(equation.leftMatrix[i][currentDiagonalIndex] != 0){
+                    // swap rows
+                    swapRows(currentDiagonalIndex, i);
+                }
+            }
+        }
+    }
+
+    private static void swapRows(int a, int b){
+        double[] nonZeroRow = equation.leftMatrix[a];
+        double nonZeroCellRight = equation.rightMatrix[a];
+        double[] currentRow = equation.leftMatrix[b];
+        double currentRowRight = equation.rightMatrix[b];
+
+        equation.leftMatrix[a] = currentRow;
+        equation.rightMatrix[a] = currentRowRight;
+
+        equation.leftMatrix[b] = nonZeroRow;
+        equation.rightMatrix[b] = nonZeroCellRight;
+    }
+
 }
