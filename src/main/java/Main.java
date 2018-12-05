@@ -10,8 +10,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
-        equation = Parser.readEquationFromFile("/Users/kamil/Documents/agh/tw/parallel-gaussian-elimination/src/main/java/test.txt");
-
+        equation = Parser.readEquationFromFile("/Users/kamil/Documents/agh/tw/parallel-gaussian-elimination/src/main/java/resources/test.txt");
 
         equation.printLeftMatrix();
         equation.printRightMatrix();
@@ -21,6 +20,7 @@ public class Main {
         equation.printLeftMatrix();
         equation.printRightMatrix();
 
+        equation.getResults("/Users/kamil/Documents/agh/tw/parallel-gaussian-elimination/src/main/java/");
     }
 
     static void parallelGaussianElimination() throws InterruptedException {
@@ -38,7 +38,7 @@ public class Main {
 
         for (int i = 0; i < equation.size; i++) {
             double value = equation.leftMatrix[i][i];
-            equation.leftMatrix[i][i] = 1;
+            equation.leftMatrix[i][i] = 1.0;
             equation.rightMatrix[i] /= value;
         }
 
@@ -105,10 +105,10 @@ public class Main {
         }
     }
 
-    private static void swapIfCurrentcurrentDiagonalIndexIsZero(int currentDiagonalIndex){
-        if(equation.leftMatrix[currentDiagonalIndex][currentDiagonalIndex] == 0){
-            for(int i=currentDiagonalIndex;i<equation.size;i++){
-                if(equation.leftMatrix[i][currentDiagonalIndex] != 0){
+    private static void swapIfCurrentcurrentDiagonalIndexIsZero(int currentDiagonalIndex) {
+        if (equation.leftMatrix[currentDiagonalIndex][currentDiagonalIndex] == 0) {
+            for (int i = currentDiagonalIndex; i < equation.size; i++) {
+                if (equation.leftMatrix[i][currentDiagonalIndex] != 0) {
                     // swap rows
                     swapRows(currentDiagonalIndex, i);
                 }
@@ -116,7 +116,7 @@ public class Main {
         }
     }
 
-    private static void swapRows(int a, int b){
+    private static void swapRows(int a, int b) {
         double[] nonZeroRow = equation.leftMatrix[a];
         double nonZeroCellRight = equation.rightMatrix[a];
         double[] currentRow = equation.leftMatrix[b];
